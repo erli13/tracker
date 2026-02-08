@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EpiPen Delivery Tracker</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -13,7 +16,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             height: 100vh;
             margin: 0;
         }
@@ -22,31 +24,34 @@
         
         #status-box {
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             width: 100%;
             max-width: 400px;
         }
 
-        .status-text { font-size: 1.2rem; color: #666; margin: 5px 0; }
+        .status-text { font-size: 1.1rem; color: #666; margin: 5px 0; }
         .highlight { font-weight: bold; color: #2ecc71; }
 
         /* THE GOOGLE MAPS BUTTON */
         #maps-btn {
-            display: inline-block;
-            background-color: #4285F4; /* Google Blue */
-            color: rgb(172, 83, 83);
+            display: block;
+            background-color: #4285F4;
+            color: white;
             text-decoration: none;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: bold;
-            padding: 20px 40px;
+            padding: 15px 30px;
             border-radius: 50px;
             box-shadow: 0 5px 20px rgba(66, 133, 244, 0.4);
             transition: transform 0.2s, background-color 0.2s;
-            pointer-events: none; /* Disabled until we get signal */
+            pointer-events: none;
             opacity: 0.5;
+            margin-bottom: 25px;
+            width: 80%;
+            max-width: 350px;
         }
 
         #maps-btn.active {
@@ -57,7 +62,17 @@
 
         #maps-btn:active { transform: scale(0.95); }
 
-        /* Animation for "Live" indicator */
+        /* THE MINI-MAP CONTAINER */
+        #mini-map {
+            height: 300px;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border: 4px solid white;
+            z-index: 1; /* Keeps it below overlays */
+        }
+
         .pulse {
             display: inline-block;
             width: 10px; height: 10px;
@@ -87,31 +102,58 @@
         WAITING FOR GPS...
     </a>
 
+    <div id="mini-map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
+        // --- 1. SETUP THE MINI-MAP ---
+        // We initialize it centered on 0,0 initially
+        const map = L.map('mini-map').setView([0, 0], 2);
+        
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Add a marker for the robot
+        const robotMarker = L.marker([0, 0]).addTo(map);
+        let mapInitialized = false; // Flag to check if we've zoomed in yet
+
+        // --- 2. CONNECT TO BACKEND ---
         const btn = document.getElementById('maps-btn');
         const connStatus = document.getElementById('conn-status');
         const timeLabel = document.getElementById('time-ago');
 
         async function updateLocation() {
             try {
+                // Fetch latest data
                 const response = await fetch('/api/location');
                 const data = await response.json();
 
                 if (data.lat && data.lng) {
-                    // 1. Construct the Google Maps URL
-                    // 'destination' sets the target
-                    // 'travelmode=walking' ensures it gives walking path (crucial for beaches)
+                    // A. Update the Google Maps Button
                     const gMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${data.lat},${data.lng}&travelmode=walking`;
-                    // 2. Update the button
+                    
                     btn.href = gMapsUrl;
                     btn.innerText = "OPEN IN GOOGLE MAPS ↗";
-                    btn.classList.add('active'); // Enable the button
+                    btn.classList.add('active');
 
-                    // 3. Update Status UI
+                    // B. Update the Mini-Map Marker
+                    const newLatLng = [data.lat, data.lng];
+                    robotMarker.setLatLng(newLatLng);
+
+                    // Only zoom the map to the robot the FIRST time we get data
+                    // (So the user can drag the map around without it snapping back constantly)
+                    if (!mapInitialized) {
+                        map.setView(newLatLng, 15); // Zoom level 15 is street view
+                        mapInitialized = true;
+                    }
+
+                    // C. Update Text Status
                     connStatus.innerHTML = '<span class="pulse"></span> Robot Active';
                     connStatus.style.color = 'black';
                     
-                    // Show how long ago the signal was received
                     const secondsAgo = Math.floor((Date.now() - data.lastUpdated) / 1000);
                     timeLabel.innerText = `${secondsAgo}s ago`;
 
@@ -128,7 +170,7 @@
 
         // Poll every 2 seconds
         setInterval(updateLocation, 2000);
-        updateLocation(); // Run once immediately
+        updateLocation(); 
     </script>
 </body>
 </html>
