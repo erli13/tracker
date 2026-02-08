@@ -1,0 +1,21 @@
+name: Lightning Fast Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to AWS Lightsail
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd tracker
+          git pull
+          npm install
+          # PM2 is watching the folder, so it restarts automatically!
