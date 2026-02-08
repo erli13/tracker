@@ -3,172 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EpiPen Delivery Tracker</title>
+    <title>LifeGuard Bot Tracker</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
+        /* --- FRIENDLY THEME VARIABLES --- */
+        :root {
+            --primary-red: #ff4757;   /* A softer, modern red */
+            --primary-blue: #3742fa;  /* A trustworthy blue */
+            --bg-color: #f1f2f6;      /* Not harsh white, soft grey */
+            --card-bg: #ffffff;
+            --text-dark: #2f3542;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            text-align: center;
+            font-family: 'Poppins', sans-serif; /* The friendly font */
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+        }
+
+        /* --- LOGO SECTION --- */
+        .header-container {
+            width: 100%; /* Fixed: Changed 'size: 300%' to valid CSS */
+            margin-top: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .app-logo {
+            width: 150px;  /* Adjust size as needed */
+            height: auto;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); /* Slight shadow for depth */
+        }
+
+        h1 {
+            font-weight: 800; /* Extra bold looks modern */
+            font-size: 1.8rem;
             margin: 0;
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
         }
-
-        h1 { color: #333; margin-bottom: 10px; }
         
-        #status-box {
-            background: white;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 400px;
+        .subtitle {
+            font-size: 0.9rem;
+            color: #747d8c;
+            font-weight: 400;
         }
 
-        .status-text { font-size: 1.1rem; color: #666; margin: 5px 0; }
-        .highlight { font-weight: bold; color: #2ecc71; }
+        /* --- THE STATUS CARD --- */
+        #status-box {
+            background: var(--card-bg);
+            padding: 20px 30px;
+            border-radius: 25px; /* Very round corners = Friendly */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); /* Soft, invisible shadow */
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 350px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        /* THE GOOGLE MAPS BUTTON */
+        .status-label { font-size: 0.8rem; color: #a4b0be; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .status-value { font-size: 1.1rem; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; }
+
+        /* --- THE BIG ACTION BUTTON --- */
         #maps-btn {
-            display: block;
-            background-color: #4285F4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary-red), #ff6b81); /* Gradient looks premium */
             color: white;
             text-decoration: none;
-            font-size: 1.3rem;
-            font-weight: bold;
-            padding: 15px 30px;
-            border-radius: 50px;
-            box-shadow: 0 5px 20px rgba(66, 133, 244, 0.4);
-            transition: transform 0.2s, background-color 0.2s;
-            pointer-events: none;
-            opacity: 0.5;
-            margin-bottom: 25px;
-            width: 80%;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(255, 71, 87, 0.3); /* Colored shadow */
+            transition: all 0.3s ease;
+            width: 100%;
             max-width: 350px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            pointer-events: none; /* Disabled initially */
+            filter: grayscale(100%); /* Greyed out initially */
+            opacity: 0.6;
         }
 
         #maps-btn.active {
             pointer-events: auto;
+            filter: grayscale(0%);
             opacity: 1;
-            background-color: #357ae8;
+            transform: translateY(0);
         }
 
-        #maps-btn:active { transform: scale(0.95); }
+        #maps-btn:active { transform: scale(0.98); }
 
-        /* THE MINI-MAP CONTAINER */
-        #mini-map {
-            height: 300px;
+        /* --- THE MINI MAP --- */
+        #mini-map-container {
             width: 100%;
-            max-width: 400px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            border: 4px solid white;
-            z-index: 1; /* Keeps it below overlays */
+            max-width: 350px;
+            height: 250px;
+            border-radius: 25px;
+            overflow: hidden; /* Clips the map corners */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 5px solid white;
         }
+        
+        #mini-map { height: 100%; width: 100%; }
 
-        .pulse {
-            display: inline-block;
+        /* --- ANIMATIONS --- */
+        .pulse-dot {
             width: 10px; height: 10px;
-            background-color: red;
+            background-color: #2ed573; /* Success Green */
             border-radius: 50%;
-            margin-right: 5px;
-            animation: pulse-animation 1.5s infinite;
+            margin-right: 8px;
+            box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7);
+            animation: pulse-green 2s infinite;
         }
 
-        @keyframes pulse-animation {
-            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(46, 213, 115, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
         }
+
     </style>
 </head>
 <body>
 
-    <h1>🚑 Emergency Delivery</h1>
+    <div class="header-container">
+        <img src="assets/logo.svg" alt="Logo" class="app-logo" onerror="this.style.display='none'">
+        <h1>RescueBot</h1>
+        <div class="subtitle">Emergency Response System</div>
+    </div>
 
     <div id="status-box">
-        <p class="status-text">Status: <span id="conn-status">Connecting...</span></p>
-        <p class="status-text">Last Signal: <span id="time-ago">--</span></p>
+        <div>
+            <div class="status-label">Signal</div>
+            <div class="status-value" id="conn-status">Searching...</div>
+        </div>
+        <div style="text-align: right;">
+            <div class="status-label">Last Update</div>
+            <div class="status-value" id="time-ago">--</div>
+        </div>
     </div>
 
     <a id="maps-btn" href="#" target="_blank">
-        WAITING FOR GPS...
+        ⏳ WAITING FOR ROBOT...
     </a>
 
-    <div id="mini-map"></div>
+    <div id="mini-map-container">
+        <div id="mini-map"></div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // --- 1. SETUP THE MINI-MAP ---
-        // We initialize it centered on 0,0 initially
-        const map = L.map('mini-map').setView([0, 0], 2);
+        // --- MAP SETUP ---
+        const map = L.map('mini-map', {
+            zoomControl: false, // Hide zoom buttons for cleaner look
+            dragging: false,    // Lock map so it acts like a static display
+            scrollWheelZoom: false 
+        }).setView([0, 0], 2);
         
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
+            attribution: '' // Hides attribution for cleaner look
         }).addTo(map);
 
-        // Add a marker for the robot
-        const robotMarker = L.marker([0, 0]).addTo(map);
-        let mapInitialized = false; // Flag to check if we've zoomed in yet
+        const robotIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/6153/6153397.png', // Friendly Robot Face
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
+        });
 
-        // --- 2. CONNECT TO BACKEND ---
+        const robotMarker = L.marker([0, 0], {icon: robotIcon}).addTo(map);
+        let mapInitialized = false;
+
+        // --- LOGIC ---
         const btn = document.getElementById('maps-btn');
         const connStatus = document.getElementById('conn-status');
         const timeLabel = document.getElementById('time-ago');
 
         async function updateLocation() {
             try {
-                // Fetch latest data
                 const response = await fetch('/api/location');
                 const data = await response.json();
 
                 if (data.lat && data.lng) {
-                    // A. Update the Google Maps Button
+                    // --- CRITICAL FIX HERE ---
+                    // This generates the correct Google Maps Walking Directions Link
                     const gMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${data.lat},${data.lng}&travelmode=walking`;
                     
                     btn.href = gMapsUrl;
-                    btn.innerText = "OPEN IN GOOGLE MAPS ↗";
+                    btn.innerHTML = "📍 GET DIRECTIONS";
                     btn.classList.add('active');
 
-                    // B. Update the Mini-Map Marker
+                    // Update Map
                     const newLatLng = [data.lat, data.lng];
                     robotMarker.setLatLng(newLatLng);
-
-                    // Only zoom the map to the robot the FIRST time we get data
-                    // (So the user can drag the map around without it snapping back constantly)
+                    
                     if (!mapInitialized) {
-                        map.setView(newLatLng, 15); // Zoom level 15 is street view
+                        map.setView(newLatLng, 16);
                         mapInitialized = true;
+                    } else {
+                        map.panTo(newLatLng);
                     }
 
-                    // C. Update Text Status
-                    connStatus.innerHTML = '<span class="pulse"></span> Robot Active';
-                    connStatus.style.color = 'black';
+                    // Update Status Text
+                    connStatus.innerHTML = '<div class="pulse-dot"></div> Active';
                     
                     const secondsAgo = Math.floor((Date.now() - data.lastUpdated) / 1000);
                     timeLabel.innerText = `${secondsAgo}s ago`;
 
                 } else {
-                    btn.innerText = "WAITING FOR ROBOT...";
+                    btn.innerHTML = "📡 CONNECTING...";
                     btn.classList.remove('active');
-                    connStatus.innerText = "No Signal Yet";
                 }
             } catch (error) {
                 console.error("Fetch error:", error);
-                connStatus.innerText = "Server Error";
+                connStatus.innerText = "Offline";
+                connStatus.style.color = 'red';
             }
         }
 
-        // Poll every 2 seconds
         setInterval(updateLocation, 2000);
         updateLocation(); 
     </script>
