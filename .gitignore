@@ -2,3 +2,4 @@ node_modules
 test.py
 test2.py
 *.pem
+deploy.ps1
