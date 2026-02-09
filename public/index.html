@@ -202,8 +202,7 @@
                 const data = await response.json();
 
                 if (data.lat && data.lng) {
-                    // --- CRITICAL FIX HERE ---
-                    // This generates the correct Google Maps Walking Directions Link
+                    
                     const gMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${data.lat},${data.lng}&travelmode=walking`;
                     
                     btn.href = gMapsUrl;
@@ -224,7 +223,9 @@
                     // Update Status Text
                     connStatus.innerHTML = '<div class="pulse-dot"></div> Active';
                     
-                    const secondsAgo = Math.floor((Date.now() - data.lastUpdated) / 1000);
+                    // --- BUG FIX ---
+                    // Math.max(0, ...) ensures the number never drops below zero
+                    const secondsAgo = Math.max(0, Math.floor((Date.now() - data.lastUpdated) / 1000));
                     timeLabel.innerText = `${secondsAgo}s ago`;
 
                 } else {
