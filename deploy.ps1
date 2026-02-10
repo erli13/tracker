@@ -13,6 +13,6 @@ Write-Host "⚡ Connecting to AWS..." -ForegroundColor Cyan
 
 # UPDATED COMMAND:
 # We manually add the Bitnami Node path (/opt/bitnami/node/bin) so the script finds 'npm' and 'pm2'
-ssh -i $KeyFile -o StrictHostKeyChecking=no bitnami@$ServerIP "export PATH=/opt/bitnami/node/bin:`$PATH && cd tracker && git fetch origin && git reset --hard origin/main && npm install && pm2 restart robot-tracker"
+ssh -i $KeyFile -o StrictHostKeyChecking=no bitnami@$ServerIP "export PATH=/opt/bitnami/node/bin:`$PATH && cd tracker && git fetch origin && git reset --hard origin/main && npm install && pm2 restart robot-tracker && pm2 restart demo"
 
 Write-Host "✅ DONE! Site updated." -ForegroundColor Green

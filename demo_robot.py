@@ -34,9 +34,9 @@ while True:
         requests.post(f"{SERVER_URL}/api/location", json=loc_payload, headers=HEADERS)
 
         # 2. Simulate Random Incident (5% chance every step)
-        if random.random() < 1:
-            # emergency = random.choice(EMERGENCIES)
-            emergency = EMERGENCIES[4]
+        if random.random() < 0.1:
+            emergency = random.choice(EMERGENCIES)
+            # emergency = EMERGENCIES[4]
             
             report_payload = {
                 "type": emergency["type"],
