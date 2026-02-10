@@ -4,8 +4,8 @@ import random
 
 # --- CONFIGURATION ---
 # Use 127.0.0.1 if running on the server, or the real URL if running on laptop
-SERVER_URL = "http://127.0.0.1:3000" 
-# SERVER_URL = "https://mini.erli.lol"
+# SERVER_URL = "http://127.0.0.1:3000" 
+SERVER_URL = "https://mini.erli.lol"
 
 HEADERS = {
     "Authorization": "super-secret-robot-password-123", 
@@ -17,7 +17,8 @@ EMERGENCIES = [
     {"type": "Arrest Kardiak", "severity": "Kritike", "notes": "Pacienti pa puls."},
     {"type": "Dehidratim", "severity": "Mesatare", "notes": "Humbje ndjenjash."},
     {"type": "Thyerje Kocke", "severity": "Lartë", "notes": "Rrëzim nga lartësia."},
-    {"type": "Sulm Paniku", "severity": "Ulët", "notes": "Vështirësi në frymëmarrje."}
+    {"type": "Sulm Paniku", "severity": "Ulët", "notes": "Vështirësi në frymëmarrje."},
+    {"type": "Dhimbje gjoksi", "severity": "Ulët", "notes": "upupupupupu"}
 ]
 
 lat = 41.3120
@@ -33,8 +34,9 @@ while True:
         requests.post(f"{SERVER_URL}/api/location", json=loc_payload, headers=HEADERS)
 
         # 2. Simulate Random Incident (5% chance every step)
-        if random.random() < 0.05:
-            emergency = random.choice(EMERGENCIES)
+        if random.random() < 1:
+            # emergency = random.choice(EMERGENCIES)
+            emergency = EMERGENCIES[4]
             
             report_payload = {
                 "type": emergency["type"],
