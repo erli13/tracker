@@ -12,8 +12,7 @@ git push
 Write-Host "⚡ Connecting to AWS..." -ForegroundColor Cyan
 
 # UPDATED COMMAND:
-# 1. 'source ~/.bashrc' loads the tools (npm, node, etc.)
-# 2. We removed 'sudo' so it shares the same list as your robot demo
-ssh -i $KeyFile -o StrictHostKeyChecking=no bitnami@$ServerIP "source /home/bitnami/.bashrc && cd tracker && git fetch origin && git reset --hard origin/main && npm install && pm2 restart robot-tracker"
+# We manually add the Bitnami Node path (/opt/bitnami/node/bin) so the script finds 'npm' and 'pm2'
+ssh -i $KeyFile -o StrictHostKeyChecking=no bitnami@$ServerIP "export PATH=/opt/bitnami/node/bin:`$PATH && cd tracker && git fetch origin && git reset --hard origin/main && npm install && pm2 restart robot-tracker"
 
 Write-Host "✅ DONE! Site updated." -ForegroundColor Green
