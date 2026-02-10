@@ -11,8 +11,9 @@ git push
 # 2. Tell AWS to update
 Write-Host "⚡ Connecting to AWS..." -ForegroundColor Cyan
 
-# We use 'git reset --hard' to force the update even if files were modified on the server
-# We keeps Nginx running (it doesn't need a restart, it just forwards traffic)
-ssh -i $KeyFile -o StrictHostKeyChecking=no bitnami@$ServerIP "cd tracker && git fetch origin && git reset --hard origin/main && npm install && sudo pm2 restart robot-tracker"
+# UPDATED COMMAND:
+# 1. 'source ~/.bashrc' loads the tools (npm, node, etc.)
+# 2. We removed 'sudo' so it shares the same list as your robot demo
+ssh -i $KeyFile -o StrictHostKeyChecking=no bitnami@$ServerIP "source /home/bitnami/.bashrc && cd tracker && git fetch origin && git reset --hard origin/main && npm install && pm2 restart robot-tracker"
 
-Write-Host "✅ DONE! Site updated. (Nginx is handling the SSL automatically)" -ForegroundColor Green
+Write-Host "✅ DONE! Site updated." -ForegroundColor Green
