@@ -6,21 +6,22 @@
     <title>LifeGuard Bot Tracker</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
-        /* --- FRIENDLY THEME VARIABLES --- */
+        /* --- THEME VARIABLES --- */
         :root {
-            --primary-red: #4dff00;   /* A softer, modern red */
-            --primary-blue: #ffffff;  /* A trustworthy blue */
-            --bg-color: #f1f2f6;      /* Not harsh white, soft grey */
+            --primary-red: #4dff00;   
+            --primary-blue: #ffffff;  
+            --bg-color: #f1f2f6;      
             --card-bg: #ffffff;
             --text-dark: #2f3542;
+            --active-tab: #2f3542;
+            --inactive-tab: #dfe4ea;
         }
 
         body {
-            font-family: 'Poppins', sans-serif; /* The friendly font */
+            font-family: 'Poppins', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-dark);
             margin: 0;
@@ -31,23 +32,24 @@
             min-height: 100vh;
         }
 
-        /* --- LOGO SECTION --- */
+        /* --- HEADER & LOGO --- */
         .header-container {
-            width: 100%; /* Fixed: Changed 'size: 300%' to valid CSS */
-            margin-top: 20px;
-            margin-bottom: 30px;
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
         .app-logo {
-            width: 150px;  /* Adjust size as needed */
+            width: 300px;
             height: auto;
-            margin-bottom: 10px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); /* Slight shadow for depth */
+            margin-bottom: -90px;
+            margin-top: -110px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
         }
 
         h1 {
-            font-weight: 800; /* Extra bold looks modern */
+            font-weight: 800;
             font-size: 1.8rem;
             margin: 0;
             color: var(--text-dark);
@@ -60,12 +62,57 @@
             font-weight: 400;
         }
 
-        /* --- THE STATUS CARD --- */
+        /* --- NEW: MENU NAVIGATION --- */
+        .nav-container {
+            display: flex;
+            background: white;
+            padding: 5px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            color: #a4b0be;
+        }
+
+        .nav-btn.active {
+            background-color: var(--active-tab);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* --- VIEWS (TABS) --- */
+        .view-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Animation for smooth switching */
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- EXISTING TRACKER STYLES --- */
         #status-box {
             background: var(--card-bg);
             padding: 20px 30px;
-            border-radius: 25px; /* Very round corners = Friendly */
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); /* Soft, invisible shadow */
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             margin-bottom: 30px;
             width: 100%;
             max-width: 350px;
@@ -77,27 +124,26 @@
         .status-label { font-size: 0.8rem; color: #a4b0be; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .status-value { font-size: 1.1rem; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; }
 
-        /* --- THE BIG ACTION BUTTON --- */
         #maps-btn {
             display: flex;
             justify-content: center;
             align-items: center;
-            background: rgb(196, 196, 196); /* Gradient looks premium */
+            background: rgb(196, 196, 196);
             color: white;
             text-decoration: none;
             font-size: 1.2rem;
             font-weight: 600;
             padding: 20px;
             border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Colored shadow */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
             width: 100%;
             max-width: 350px;
             margin-bottom: 30px;
             position: relative;
             overflow: hidden;
-            pointer-events: none; /* Disabled initially */
-            filter: grayscale(100%); /* Greyed out initially */
+            pointer-events: none;
+            filter: grayscale(100%);
             opacity: 0.6;
         }
 
@@ -110,23 +156,21 @@
 
         #maps-btn:active { transform: scale(0.98); }
 
-        /* --- THE MINI MAP --- */
         #mini-map-container {
             width: 100%;
             max-width: 350px;
             height: 250px;
             border-radius: 25px;
-            overflow: hidden; /* Clips the map corners */
+            overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             border: 5px solid white;
         }
         
         #mini-map { height: 100%; width: 100%; }
 
-        /* --- ANIMATIONS --- */
         .pulse-dot {
             width: 10px; height: 10px;
-            background-color: #2ed573; /* Success Green */
+            background-color: #2ed573;
             border-radius: 50%;
             margin-right: 8px;
             box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7);
@@ -139,6 +183,42 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
         }
 
+        /* --- NEW: INFO PAGE STYLES --- */
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .info-card h3 {
+            margin: 0 0 5px 0;
+            color: #2f3542;
+            font-size: 1.1rem;
+        }
+
+        .info-card p {
+            margin: 0;
+            color: #747d8c;
+            font-size: 0.9rem;
+        }
+        
+        .role-tag {
+            display: inline-block;
+            background: #dfe4ea;
+            color: #57606f;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
     </style>
 </head>
 <body>
@@ -149,41 +229,115 @@
         <div class="subtitle">Sistemi i ndihmës së shpejtë</div>
     </div>
 
-    <div id="status-box">
-        <div>
-            <div class="status-label">Sinjali</div>
-            <div class="status-value" id="conn-status">Duke kërkuar...</div>
+    <div class="nav-container">
+        <div class="nav-btn active" onclick="switchTab('tracker')">Gjurmuesi</div>
+        <div class="nav-btn" onclick="switchTab('info')">Rreth Nesh</div>
+    </div>
+
+    <div id="view-tracker" class="view-section">
+        <div id="status-box">
+            <div>
+                <div class="status-label">Sinjali</div>
+                <div class="status-value" id="conn-status">Duke kërkuar...</div>
+            </div>
+            <div style="text-align: right;">
+                <div class="status-label">Update-i i fundit</div>
+                <div class="status-value" id="time-ago">--</div>
+            </div>
         </div>
-        <div style="text-align: right;">
-            <div class="status-label">Update-i i fundit</div>
-            <div class="status-value" id="time-ago">--</div>
+
+        <a id="maps-btn" href="#" target="_blank">
+            ⏳ Duke pritur për robotin...
+        </a>
+
+        <div id="mini-map-container">
+            <div id="mini-map"></div>
         </div>
     </div>
 
-    <a id="maps-btn" href="#" target="_blank">
-        ⏳ Duke pritur për robotin...
-    </a>
+    <div id="view-info" class="view-section" style="display: none;">
+        
+        <div class="info-card">
+            <div class="role-tag">Rreth Projektit</div>
+            <h3>Mini Baymax</h3>
+            <p>Robotech 2025-2026</p>
+        </div>
 
-    <div id="mini-map-container">
-        <div id="mini-map"></div>
+         <div class="info-card">
+            <div class="role-tag">Zhvillimi i Web & Software Coding</div>
+            <h3>Erli Hoxha</h3>
+            <p>Backend & Frontend Dev</p>
+            <p>Software & Arduino Dev</p>
+        </div>
+
+        <div class="info-card">
+            <div class="role-tag">Coding & Software</div>
+            <h3>Ejona Musollari</h3>
+            <p>Software & Arduino Dev</p>
+        </div>
+
+
+        <div class="info-card">
+            <div class="role-tag">Ndërtimi i Robotit</div>
+            <h3>Anis Leka</h3>
+            <p>Hardware</p>
+        </div>
+
+        <div class="info-card">
+            <div class="role-tag">Ndërtimi i Robotit</div>
+            <h3>Xhejsi Topalli</h3>
+            <p>Hardware</p>
+        </div>
+
+
+        <div class="info-card">
+            <div class="role-tag">Ndërtimi i Robotit</div>
+            <h3>Biorni Binjaku</h3>
+            <p>jezz jezz jezz</p>
+        </div>
+
+
+
+
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // --- MAP SETUP ---
+        // --- NEW: TAB SWITCHING LOGIC ---
+        function switchTab(tabName) {
+            // 1. Hide both sections
+            document.getElementById('view-tracker').style.display = 'none';
+            document.getElementById('view-info').style.display = 'none';
+            
+            // 2. Reset buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+            // 3. Show selected section
+            if (tabName === 'tracker') {
+                document.getElementById('view-tracker').style.display = 'flex';
+                document.querySelectorAll('.nav-btn')[0].classList.add('active');
+                // Fix map size bug when un-hiding
+                setTimeout(() => { map.invalidateSize(); }, 100);
+            } else {
+                document.getElementById('view-info').style.display = 'flex';
+                document.querySelectorAll('.nav-btn')[1].classList.add('active');
+            }
+        }
+
+        // --- EXISTING MAP LOGIC (UNCHANGED) ---
         const map = L.map('mini-map', {
-            zoomControl: false, // Hide zoom buttons for cleaner look
-            dragging: false,    // Lock map so it acts like a static display
+            zoomControl: false,
+            dragging: false,
             scrollWheelZoom: false 
         }).setView([0, 0], 2);
         
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '' // Hides attribution for cleaner look
+            attribution: ''
         }).addTo(map);
 
         const robotIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/6153/6153397.png', // Friendly Robot Face
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/6153/6153397.png',
             iconSize: [40, 40],
             iconAnchor: [20, 20]
         });
@@ -191,7 +345,6 @@
         const robotMarker = L.marker([0, 0], {icon: robotIcon}).addTo(map);
         let mapInitialized = false;
 
-        // --- LOGIC ---
         const btn = document.getElementById('maps-btn');
         const connStatus = document.getElementById('conn-status');
         const timeLabel = document.getElementById('time-ago');
@@ -223,8 +376,6 @@
                     // Update Status Text
                     connStatus.innerHTML = '<div class="pulse-dot"></div> Aktiv';
                     
-                    // --- BUG FIX ---
-                    // Math.max(0, ...) ensures the number never drops below zero
                     const secondsAgo = Math.max(0, Math.floor((Date.now() - data.lastUpdated) / 1000));
                     timeLabel.innerText = `${secondsAgo}s ago`;
 
