@@ -1,54 +1,58 @@
 import requests
 import time
+import random
 
 # --- CONFIGURATION ---
-# 1. Choose your target (Uncomment the one you want to use)
-# SERVER_URL = "http://localhost:3000/api/location"
-SERVER_URL = "https://mini.erli.lol/api/location"
+# Use 127.0.0.1 if running on the server, or the real URL if running on laptop
+SERVER_URL = "http://127.0.0.1:3000" 
+# SERVER_URL = "https://mini.erli.lol"
 
-# 2. THE SECRET PASSWORD (Must match server.js)
 HEADERS = {
     "Authorization": "super-secret-robot-password-123", 
     "Content-Type": "application/json"
 }
 
-# 3. Starting Position (Durrës Beach)
-current_lat = 41.3120
-current_lng = 19.4790
+# Medical Scenarios for Demo
+EMERGENCIES = [
+    {"type": "Arrest Kardiak", "severity": "Kritike", "notes": "Pacienti pa puls."},
+    {"type": "Dehidratim", "severity": "Mesatare", "notes": "Humbje ndjenjash."},
+    {"type": "Thyerje Kocke", "severity": "Lartë", "notes": "Rrëzim nga lartësia."},
+    {"type": "Sulm Paniku", "severity": "Ulët", "notes": "Vështirësi në frymëmarrje."}
+]
 
-print(f"🤖 Robot Walking Simulation Started...")
-print(f"📡 Connecting to: {SERVER_URL}")
-print("Press CTRL+C to stop.")
+lat = 41.3120
+lng = 19.4790
+
+print(f"🤖 Robot 2.0 Started...")
+print(f"📡 Server: {SERVER_URL}")
 
 while True:
     try:
-        # Create the data payload with current coordinates
-        payload = {
-            "lat": current_lat,
-            "lng": current_lng
-        }
+        # 1. Update Location
+        loc_payload = {"lat": lat, "lng": lng}
+        requests.post(f"{SERVER_URL}/api/location", json=loc_payload, headers=HEADERS)
 
-        # Send the POST request with HEADERS (Security)
-        response = requests.post(SERVER_URL, json=payload, headers=HEADERS, timeout=2)
+        # 2. Simulate Random Incident (5% chance every step)
+        if random.random() < 0.05:
+            emergency = random.choice(EMERGENCIES)
+            
+            report_payload = {
+                "type": emergency["type"],
+                "severity": emergency["severity"],
+                "notes": emergency["notes"]
+            }
+            
+            resp = requests.post(f"{SERVER_URL}/api/report", json=report_payload, headers=HEADERS)
+            if resp.status_code == 200:
+                print(f"🚨 SENT REPORT: {emergency['type']}")
 
-        if response.status_code == 200:
-            print(f"✅ Moved to: {current_lat:.5f}, {current_lng:.5f}")
-        elif response.status_code == 403:
-            print("🛑 ACCESS DENIED! Your password doesn't match server.js")
-        else:
-            print(f"⚠️ Server Error: {response.status_code}")
-
-        # --- THE WALKING LOGIC ---
-        # Move South-East slightly
-        current_lat -= 0.0001 
-        current_lng += 0.0001 
-
-        # Wait 2 seconds before next step
+        # 3. Walk
+        lat -= 0.0001
+        lng += 0.0001
+        print(f"✅ Walking... {lat:.4f}")
+        
         time.sleep(2)
 
-    except requests.exceptions.ConnectionError:
-        print("❌ Connection Failed. Is the server running?")
-        time.sleep(2)
     except Exception as e:
         print(f"❌ Error: {e}")
         time.sleep(2)

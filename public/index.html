@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LifeGuard Bot Tracker</title>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         /* --- THEME VARIABLES --- */
         :root {
-            --primary-red: #4dff00;   
-            --primary-blue: #ffffff;  
-            --bg-color: #f1f2f6;      
+            --primary-red: #4dff00;
+            --primary-blue: #ffffff;
+            --bg-color: #f1f2f6;
             --card-bg: #ffffff;
             --text-dark: #2f3542;
             --active-tab: #2f3542;
@@ -45,7 +47,7 @@
             height: auto;
             margin-bottom: -90px;
             margin-top: -110px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
         }
 
         h1 {
@@ -55,23 +57,23 @@
             color: var(--text-dark);
             letter-spacing: -0.5px;
         }
-        
+
         .subtitle {
             font-size: 0.9rem;
             color: #005dfe;
             font-weight: 400;
         }
 
-        /* --- NEW: MENU NAVIGATION --- */
+        /* --- MENU NAVIGATION --- */
         .nav-container {
             display: flex;
             background: white;
             padding: 5px;
             border-radius: 50px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 25px;
             width: 100%;
-            max-width: 300px;
+            max-width: 350px;
         }
 
         .nav-btn {
@@ -81,7 +83,7 @@
             border-radius: 40px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             transition: all 0.3s ease;
             color: #a4b0be;
         }
@@ -89,7 +91,7 @@
         .nav-btn.active {
             background-color: var(--active-tab);
             color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         /* --- VIEWS (TABS) --- */
@@ -98,13 +100,19 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Animation for smooth switching */
             animation: fadeIn 0.4s ease;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* --- EXISTING TRACKER STYLES --- */
@@ -112,7 +120,7 @@
             background: var(--card-bg);
             padding: 20px 30px;
             border-radius: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
             width: 100%;
             max-width: 350px;
@@ -121,8 +129,21 @@
             align-items: center;
         }
 
-        .status-label { font-size: 0.8rem; color: #a4b0be; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        .status-value { font-size: 1.1rem; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; }
+        .status-label {
+            font-size: 0.8rem;
+            color: #a4b0be;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .status-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+        }
 
         #maps-btn {
             display: flex;
@@ -154,7 +175,9 @@
             transform: translateY(0);
         }
 
-        #maps-btn:active { transform: scale(0.98); }
+        #maps-btn:active {
+            transform: scale(0.98);
+        }
 
         #mini-map-container {
             width: 100%;
@@ -162,14 +185,18 @@
             height: 250px;
             border-radius: 25px;
             overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             border: 5px solid white;
         }
-        
-        #mini-map { height: 100%; width: 100%; }
+
+        #mini-map {
+            height: 100%;
+            width: 100%;
+        }
 
         .pulse-dot {
-            width: 10px; height: 10px;
+            width: 10px;
+            height: 10px;
             background-color: #2ed573;
             border-radius: 50%;
             margin-right: 8px;
@@ -178,12 +205,23 @@
         }
 
         @keyframes pulse-green {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(46, 213, 115, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(46, 213, 115, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(46, 213, 115, 0);
+            }
         }
 
-        /* --- NEW: INFO PAGE STYLES --- */
+        /* --- INFO PAGE STYLES --- */
         .info-card {
             background: white;
             border-radius: 20px;
@@ -191,7 +229,7 @@
             margin-bottom: 20px;
             width: 100%;
             max-width: 300px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             text-align: center;
         }
 
@@ -206,7 +244,7 @@
             color: #747d8c;
             font-size: 0.9rem;
         }
-        
+
         .role-tag {
             display: inline-block;
             background: #dfe4ea;
@@ -219,8 +257,92 @@
             text-transform: uppercase;
         }
 
+        /* --- REPORT LOG STYLES --- */
+        .log-container {
+            width: 100%;
+            max-width: 350px;
+            margin-bottom: 80px;
+            /* Space for the download button */
+        }
+
+        .log-item {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            border-left: 5px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .log-severity-Kritike {
+            border-left-color: #ff4757;
+        }
+
+        .log-severity-Lartë {
+            border-left-color: #ffa502;
+        }
+
+        .log-severity-Mesatare {
+            border-left-color: #eccc68;
+        }
+
+        .log-severity-Ulët {
+            border-left-color: #2ed573;
+        }
+
+        .log-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #2f3542;
+        }
+
+        .log-time {
+            font-size: 0.7rem;
+            color: #a4b0be;
+        }
+
+        .log-notes {
+            font-size: 0.8rem;
+            color: #747d8c;
+            margin-top: 5px;
+        }
+
+        /* --- NEW: CHART & DOWNLOAD BUTTON --- */
+        .chart-container {
+            background: white;
+            padding: 15px;
+            border-radius: 25px;
+            width: 100%;
+            max-width: 320px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .download-btn {
+            background: #2f3542;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(47, 53, 66, 0.3);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-btn:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
+
 <body>
 
     <div class="header-container">
@@ -231,6 +353,7 @@
 
     <div class="nav-container">
         <div class="nav-btn active" onclick="switchTab('tracker')">Gjurmuesi</div>
+        <div class="nav-btn" onclick="switchTab('reports')">Raporte</div>
         <div class="nav-btn" onclick="switchTab('info')">Rreth Nesh</div>
     </div>
 
@@ -255,15 +378,32 @@
         </div>
     </div>
 
+    <div id="view-reports" class="view-section" style="display: none;">
+
+        <div class="chart-container">
+            <canvas id="severityChart"></canvas>
+        </div>
+
+        <button class="download-btn" onclick="downloadExcel()">
+            📥 Shkarko në Excel
+        </button>
+
+        <h3
+            style="margin-bottom: 15px; color: #a4b0be; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">
+            HISTORIKU I RASTEVE</h3>
+        <div id="incident-log" class="log-container">
+            <div style="text-align:center; color:#ccc; margin-top: 20px;">Duke shkarkuar të dhënat...</div>
+        </div>
+    </div>
+
     <div id="view-info" class="view-section" style="display: none;">
-        
         <div class="info-card">
             <div class="role-tag">Rreth Projektit</div>
             <h3>Mini Baymax</h3>
             <p>Robotech 2025-2026</p>
         </div>
 
-         <div class="info-card">
+        <div class="info-card">
             <div class="role-tag">Zhvillimi i Web & Software Coding</div>
             <h3>Erli Hoxha</h3>
             <p>Backend & Frontend Dev</p>
@@ -275,7 +415,6 @@
             <h3>Ejona Musollari</h3>
             <p>Software & Arduino Dev</p>
         </div>
-
 
         <div class="info-card">
             <div class="role-tag">Ndërtimi i Robotit</div>
@@ -289,60 +428,175 @@
             <p>Hardware</p>
         </div>
 
-
         <div class="info-card">
             <div class="role-tag">Ndërtimi i Robotit</div>
             <h3>Biorni Binjaku</h3>
-            <p>jezz jezz jezz</p>
+            <p>Hardware</p>
         </div>
-
-
-
-
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // --- NEW: TAB SWITCHING LOGIC ---
+        // --- GLOBAL VARIABLES ---
+        let globalIncidentData = [];
+        let myChart = null;
+
+        // --- TAB SWITCHING LOGIC ---
         function switchTab(tabName) {
-            // 1. Hide both sections
             document.getElementById('view-tracker').style.display = 'none';
+            document.getElementById('view-reports').style.display = 'none';
             document.getElementById('view-info').style.display = 'none';
-            
-            // 2. Reset buttons
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
 
-            // 3. Show selected section
             if (tabName === 'tracker') {
                 document.getElementById('view-tracker').style.display = 'flex';
                 document.querySelectorAll('.nav-btn')[0].classList.add('active');
-                // Fix map size bug when un-hiding
                 setTimeout(() => { map.invalidateSize(); }, 100);
+            } else if (tabName === 'reports') {
+                document.getElementById('view-reports').style.display = 'flex';
+                document.querySelectorAll('.nav-btn')[1].classList.add('active');
+                fetchIncidents();
             } else {
                 document.getElementById('view-info').style.display = 'flex';
-                document.querySelectorAll('.nav-btn')[1].classList.add('active');
+                document.querySelectorAll('.nav-btn')[2].classList.add('active');
             }
         }
 
-        // --- EXISTING MAP LOGIC (UNCHANGED) ---
-        const map = L.map('mini-map', {
-            zoomControl: false,
-            dragging: false,
-            scrollWheelZoom: false 
-        }).setView([0, 0], 2);
-        
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: ''
-        }).addTo(map);
+        // --- FETCH INCIDENTS & UPDATE CHART ---
+        async function fetchIncidents() {
+            try {
+                const res = await fetch('/api/incidents');
+                const data = await res.json();
+                globalIncidentData = data; // Save for Excel download
 
-        const robotIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/6153/6153397.png',
-            iconSize: [40, 40],
-            iconAnchor: [20, 20]
-        });
+                // 1. Update List
+                const container = document.getElementById('incident-log');
+                container.innerHTML = "";
 
-        const robotMarker = L.marker([0, 0], {icon: robotIcon}).addTo(map);
+                if (data.length === 0) {
+                    container.innerHTML = "<div style='text-align:center; color:#ccc; margin-top:20px;'>Nuk ka raste të raportuara ende.</div>";
+                    return;
+                }
+
+                // 2. Process Data for Chart
+                let counts = { 'Kritike': 0, 'Lartë': 0, 'Mesatare': 0, 'Ulët': 0 };
+
+                data.forEach(item => {
+                    // Update Counts
+                    if (counts[item.severity] !== undefined) counts[item.severity]++;
+
+                    // Render HTML List
+                    const date = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    let severityClass = 'log-severity-Ulët';
+                    if (item.severity === 'Kritike') severityClass = 'log-severity-Kritike';
+                    if (item.severity === 'Lartë') severityClass = 'log-severity-Lartë';
+                    if (item.severity === 'Mesatare') severityClass = 'log-severity-Mesatare';
+
+                    const html = `
+                        <div class="log-item ${severityClass}">
+                            <div style="flex:1;">
+                                <div class="log-title">${item.type}</div>
+                                <div class="log-notes">${item.notes}</div>
+                            </div>
+                            <div style="text-align:right; margin-left:10px;">
+                                <div class="role-tag" style="margin-bottom:5px; background:${getSeverityColor(item.severity)}; color:white;">${item.severity}</div>
+                                <div class="log-time">${date}</div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+
+                // 3. Update Chart
+                updateChart(counts);
+
+            } catch (e) { console.error("Error fetching reports:", e); }
+        }
+
+        // --- EXCEL DOWNLOAD LOGIC ---
+        // --- IMPROVED EXCEL DOWNLOAD LOGIC ---
+            // --- PRETTY EXCEL DOWNLOADER ---
+                function downloadExcel() {
+                    if (globalIncidentData.length === 0) {
+                        alert("Nuk ka të dhëna për të shkarkuar!");
+                        return;
+                    }
+
+                    // 1. Add BOM for special characters (ë, ç)
+                    let csvContent = "\uFEFF";
+
+                    // 2. Simple, Human-Readable Headers
+                    csvContent += "Nr,Koha,Tipi,Graviteti,Shenime\n";
+
+                    // 3. Loop through data with an Index (i)
+                    globalIncidentData.forEach((row, index) => {
+
+                        // Clean data (Handle quotes inside text)
+                        const cleanType = `"${row.type.replace(/"/g, '""')}"`;
+                        const cleanSeverity = `"${row.severity}"`;
+                        const cleanNotes = `"${row.notes.replace(/"/g, '""')}"`;
+
+                        // Format Date: "10/02/2026 14:30"
+                        const date = new Date(row.timestamp).toLocaleString('sq-AL');
+
+                        // Create the row (Using 'index + 1' for a pretty ID like 1, 2, 3)
+                        const rowStr = `${index + 1},"${date}",${cleanType},${cleanSeverity},${cleanNotes}`;
+
+                        csvContent += rowStr + "\n";
+                    });
+
+                    // 4. Download Trigger
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    const url = URL.createObjectURL(blob);
+
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", "raporte_mini_baymax.csv");
+                    link.style.visibility = 'hidden';
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+
+        // --- CHART CONFIGURATION ---
+        function updateChart(counts) {
+            const ctx = document.getElementById('severityChart').getContext('2d');
+
+            if (myChart) myChart.destroy(); // Destroy old chart to avoid glitching
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Kritike', 'Lartë', 'Mesatare', 'Ulët'],
+                    datasets: [{
+                        data: [counts['Kritike'], counts['Lartë'], counts['Mesatare'], counts['Ulët']],
+                        backgroundColor: ['#ff4757', '#ffa502', '#eccc68', '#2ed573'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Statistika sipas Gravitetit' }
+                    }
+                }
+            });
+        }
+
+        function getSeverityColor(sev) {
+            if (sev === 'Kritike') return '#ff4757';
+            if (sev === 'Lartë') return '#ffa502';
+            if (sev === 'Mesatare') return '#eccc68';
+            return '#2ed573';
+        }
+
+        // --- MAP LOGIC ---
+        const map = L.map('mini-map', { zoomControl: false, dragging: false, scrollWheelZoom: false }).setView([0, 0], 2);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '' }).addTo(map);
+        const robotMarker = L.marker([0, 0], { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/6153/6153397.png', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(map);
         let mapInitialized = false;
 
         const btn = document.getElementById('maps-btn');
@@ -355,43 +609,32 @@
                 const data = await response.json();
 
                 if (data.lat && data.lng) {
-                    
                     const gMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${data.lat},${data.lng}&travelmode=walking`;
-                    
                     btn.href = gMapsUrl;
                     btn.innerHTML = "HAP NE GOOGLE MAPS";
                     btn.classList.add('active');
 
-                    // Update Map
                     const newLatLng = [data.lat, data.lng];
                     robotMarker.setLatLng(newLatLng);
-                    
-                    if (!mapInitialized) {
-                        map.setView(newLatLng, 16);
-                        mapInitialized = true;
-                    } else {
-                        map.panTo(newLatLng);
-                    }
 
-                    // Update Status Text
+                    if (!mapInitialized) { map.setView(newLatLng, 16); mapInitialized = true; }
+                    else { map.panTo(newLatLng); }
+
                     connStatus.innerHTML = '<div class="pulse-dot"></div> Aktiv';
-                    
                     const secondsAgo = Math.max(0, Math.floor((Date.now() - data.lastUpdated) / 1000));
                     timeLabel.innerText = `${secondsAgo}s ago`;
-
                 } else {
-                    btn.innerHTML = "📡 CONNECTING...";
-                    btn.classList.remove('active');
+                    btn.innerHTML = "📡 CONNECTING..."; btn.classList.remove('active');
                 }
             } catch (error) {
-                console.error("Fetch error:", error);
-                connStatus.innerText = "Offline";
-                connStatus.style.color = 'red';
+                connStatus.innerText = "Offline"; connStatus.style.color = 'red';
             }
         }
 
         setInterval(updateLocation, 2000);
+        setInterval(fetchIncidents, 5000);
         updateLocation(); 
     </script>
 </body>
+
 </html>
